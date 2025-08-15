@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import api from '../api';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
-    address: '',
-    telephone: ''
+    role: 'staff', // default role
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -20,12 +19,36 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    // Simple validation
+    if (!formData.username.trim() || !formData.email.trim() || !formData.password.trim()) {
+      setError('Username, email, and password are required.');
+      setSuccess('');
+      return;
+    }
+
     try {
-      await api.post('/register', formData);
-      setSuccess('Registration successful! Redirecting...');
-      setError('');
-      setTimeout(() => navigate('/login'), 1500);
-    } catch {
+      const res = await axios.post(
+        'http://localhost:8080/PahanaBillingSystem_war/register',
+        formData, // JSON body
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // if backend uses cookies/sessions
+        }
+      );
+
+      if (res.status === 200 || res.status === 201) {
+        setSuccess('Registration successful! Redirecting to login...');
+        setError('');
+        setTimeout(() => navigate('/login'), 1500);
+      } else {
+        setError('Registration failed. Please try again.');
+        setSuccess('');
+      }
+    } catch (err) {
+      console.error(err);
       setError('Registration failed. Please try again.');
       setSuccess('');
     }
@@ -42,12 +65,12 @@ export default function Register() {
 
         <form onSubmit={handleRegister}>
           <div className="mb-3">
-            <label className="form-label">Full Name</label>
+            <label className="form-label">Username</label>
             <input
               type="text"
-              name="name"
+              name="username"
               className="form-control rounded-pill"
-              value={formData.name}
+              value={formData.username}
               onChange={handleChange}
               required
             />
@@ -74,28 +97,6 @@ export default function Register() {
               value={formData.password}
               onChange={handleChange}
               required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Address</label>
-            <input
-              type="text"
-              name="address"
-              className="form-control rounded-pill"
-              value={formData.address}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label">Telephone</label>
-            <input
-              type="text"
-              name="telephone"
-              className="form-control rounded-pill"
-              value={formData.telephone}
-              onChange={handleChange}
             />
           </div>
 

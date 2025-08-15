@@ -12,15 +12,21 @@ function CustomerForm() {
     name: "",
     address: "",
     telephone: "",
-    unitsConsumed: ""
+    // unitsConsumed: ""
   });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
+  // Fetch existing customer details for editing
   useEffect(() => {
     if (isEdit) {
       axios
-        .get(`http://localhost:8080/PahanaBillingSystem_war/customers/${id}`)
+        .get(`http://localhost:8080/PahanaBillingSystem_war/customer/byId`, { params: { customerId: id } })
         .then((res) => setFormData(res.data))
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error("Failed to fetch customer details:", err);
+          setError("Failed to fetch customer details.");
+        });
     }
   }, [id, isEdit]);
 
@@ -28,25 +34,86 @@ function CustomerForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
 
+//     // Basic validation
+//     if (!formData.accountNumber || !formData.name || !formData.address || !formData.telephone) {
+//       setError("All fields are required.");
+//       return;
+//     }
+
+//     try {
+//       if (isEdit) {
+//         await axios.put("http://localhost:8080/PahanaBillingSystem_war/customer", {
+//           customerId: id,
+//           ...formData,
+//         });
+//         setSuccess("Customer updated successfully!");
+//       } else {
+//         await axios.post("http://localhost:8080/PahanaBillingSystem_war/customer", formData);
+//         setSuccess("Customer added successfully!");
+//       }
+//       setError("");
+//       setTimeout(() => navigate("/customers"), 1500);
+//     } catch (err) {
+//       console.error("Error saving customer:", err);
+//       setError("Failed to save customer.");
+//       setSuccess("");
+//     }
+//   };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.accountNumber || !formData.name || !formData.address || !formData.telephone) {
+    setError("All fields are required.");
+    return;
+  }
+
+  try {
     if (isEdit) {
-      axios
-        .put(`http://localhost:8080/PahanaBillingSystem_war/customers/${id}`, formData)
-        .then(() => navigate("/customers"))
-        .catch((err) => console.error(err));
+      // For update
+      await axios.put("http://localhost:8080/PahanaBillingSystem_war/customer", null, {
+        params: {
+          customerId: id,
+          accountNumber: formData.accountNumber,
+          name: formData.name,
+          address: formData.address,
+          telephone: formData.telephone,
+        },
+      });
+      setSuccess("Customer updated successfully!");
     } else {
-      axios
-        .post("http://localhost:8080/PahanaBillingSystem_war/customers", formData)
-        .then(() => navigate("/customers"))
-        .catch((err) => console.error(err));
+      // For add (POST)
+      await axios.post("http://localhost:8080/PahanaBillingSystem_war/customer", null, {
+        params: {
+          accountNumber: formData.accountNumber,
+          name: formData.name,
+          address: formData.address,
+          telephone: formData.telephone,
+        },
+      });
+      setSuccess("Customer added successfully!");
     }
-  };
+
+    setError("");
+    setTimeout(() => navigate("/customers"), 1500);
+  } catch (err) {
+    console.error("Error saving customer:", err);
+    setError("Failed to save customer.");
+    setSuccess("");
+  }
+};
+
 
   return (
     <div className="container mt-4">
       <h2>{isEdit ? "Edit Customer" : "Add New Customer"}</h2>
+
+      {error && <div className="alert alert-danger">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
+
       <form onSubmit={handleSubmit} className="mt-3">
         <div className="mb-3">
           <label className="form-label">Account Number</label>
@@ -96,7 +163,7 @@ function CustomerForm() {
           />
         </div>
 
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label className="form-label">Units Consumed</label>
           <input
             type="number"
@@ -106,16 +173,12 @@ function CustomerForm() {
             className="form-control"
             required
           />
-        </div>
+        </div> */}
 
         <button type="submit" className="btn btn-success">
-          {isEdit ? "Update" : "Save"}
+          {isEdit ? "Update Customer" : "Add Customer"}
         </button>
-        <button
-          type="button"
-          className="btn btn-secondary ms-2"
-          onClick={() => navigate("/customers")}
-        >
+        <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate("/customers")}>
           Cancel
         </button>
       </form>
@@ -124,3 +187,4 @@ function CustomerForm() {
 }
 
 export default CustomerForm;
+
