@@ -34,34 +34,6 @@ function CustomerForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     // Basic validation
-//     if (!formData.accountNumber || !formData.name || !formData.address || !formData.telephone) {
-//       setError("All fields are required.");
-//       return;
-//     }
-
-//     try {
-//       if (isEdit) {
-//         await axios.put("http://localhost:8080/PahanaBillingSystem_war/customer", {
-//           customerId: id,
-//           ...formData,
-//         });
-//         setSuccess("Customer updated successfully!");
-//       } else {
-//         await axios.post("http://localhost:8080/PahanaBillingSystem_war/customer", formData);
-//         setSuccess("Customer added successfully!");
-//       }
-//       setError("");
-//       setTimeout(() => navigate("/customers"), 1500);
-//     } catch (err) {
-//       console.error("Error saving customer:", err);
-//       setError("Failed to save customer.");
-//       setSuccess("");
-//     }
-//   };
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -73,7 +45,6 @@ const handleSubmit = async (e) => {
 
   try {
     if (isEdit) {
-      // For update
       await axios.put("http://localhost:8080/PahanaBillingSystem_war/customer", null, {
         params: {
           customerId: id,

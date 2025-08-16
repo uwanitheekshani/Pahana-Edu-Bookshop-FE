@@ -176,6 +176,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function BillingPage() {
   const [customers, setCustomers] = useState([]);
@@ -186,7 +187,8 @@ function BillingPage() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-
+  const [bills, setBills] = useState([]); 
+  const navigate = useNavigate();
   // Fetch customers & items
   useEffect(() => {
     axios
@@ -198,7 +200,17 @@ function BillingPage() {
       .get("http://localhost:8080/PahanaBillingSystem_war/item")
       .then((res) => setItems(res.data))
       .catch(() => setError("Failed to load items"));
+
+      fetchBills(); // Fetch all bills
   }, []);
+
+   // Fetch all bills
+  const fetchBills = () => {
+    axios
+      .get("http://localhost:8080/PahanaBillingSystem_war/bill")
+      .then((res) => setBills(res.data))
+      .catch(() => console.log("Failed to fetch bills"));
+  };
 
   // Update totals whenever billItems changes
   useEffect(() => {
@@ -283,9 +295,75 @@ const handleSubmit = (e) => {
     });
 };
 
+
+const handlePrint = (bill) => {
+  const customer = customers.find((c) => c.id === bill.customerId);
+
+  const itemsHtml = bill.items.map((item) => {
+    const i = items.find((it) => it.Id === item.id);
+    return `
+      <tr>
+        <td>${i ? i.itemName : item.id}</td>
+        <td>${item.quantity}</td>
+        <td>${i ? i.unitPrice.toFixed(2) : "-"}</td>
+        <td>${i ? (i.unitPrice * item.quantity).toFixed(2) : "-"}</td>
+      </tr>
+    `;
+  }).join("");
+
+  const html = `
+    <html>
+      <head>
+        <title>Bill #${bill.id}</title>
+        <style>
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+          th { background-color: #f2f2f2; }
+          h2, h3 { text-align: center; }
+        </style>
+      </head>
+      <body>
+        <h2>Bill #${bill.id}</h2>
+        <h3>Customer: ${customer ? customer.name : bill.customerId}</h3>
+        <p>Date: ${bill.billDate}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+        <h3>Total Qty: ${bill.totalQty} | Total Amount: Rs. ${bill.totalAmount.toFixed(2)}</h3>
+      </body>
+    </html>
+  `;
+
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.print();
+};
+
+
   return (
     <div className="container mt-4">
-      <h2>Create Bill</h2>
+      {/* <h2>Create Bill</h2> */}
+
+       <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Create Bill</h2>
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate("/dashboard")}
+        >
+          Back to Dashboard
+        </button>
+      </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
@@ -395,6 +473,51 @@ const handleSubmit = (e) => {
           Save Bill
         </button>
       </form>
+
+       {/* ✅ Billing History Table */}
+      <h3 className="mt-5">Billing History</h3>
+      <table className="table table-striped table-bordered">
+        <thead className="table-dark">
+          <tr>
+            <th>Bill ID</th>
+            <th>Customer</th>
+            <th>Total Qty</th>
+            <th>Total Amount</th>
+            <th>Bill Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {bills.length > 0 ? (
+            bills.map((b) => {
+              const customer = customers.find((c) => c.id === b.customerId);
+              return (
+                <tr key={b.id}>
+                  <td>{b.id}</td>
+                  <td>{customer ? customer.name : b.customerId}</td>
+                  <td>{b.totalQty}</td>
+                  <td>{b.totalAmount.toFixed(2)}</td>
+                  <td>{b.billDate}</td>
+                  <td>
+  <button
+    className="btn btn-primary btn-sm"
+    onClick={() => handlePrint(b)}
+  >
+    Print
+  </button>
+</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="5" className="text-center">
+                No bills found.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

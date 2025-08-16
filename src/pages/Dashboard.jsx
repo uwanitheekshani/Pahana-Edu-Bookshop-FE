@@ -1,10 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
+import { logout } from "../utils/auth";
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const userName = localStorage.getItem("userName") || "User";
+
+  
+
+  const handleLogout = () => {
+    logout(); // clear session/localStorage
+    navigate("/login"); // redirect to login page
+  };
 
   const menuItems = [
     { title: "Manage Customers", desc: "Add, edit, and view customers", link: "/customers", icon: "bi-people-fill", color: "primary" },
@@ -17,6 +26,12 @@ export default function Dashboard() {
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Welcome, {userName} 👋</h2>
+       <div className="d-flex justify-content-between align-items-center p-3 bg-light shadow">
+      <h3>Pahana Billing System</h3>
+      <button className="btn btn-danger" onClick={handleLogout}>
+        Logout
+      </button>
+    </div>
       <div className="row">
         {menuItems.map((item, idx) => (
           <div className="col-md-4 mb-4" key={idx}>

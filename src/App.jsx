@@ -9,6 +9,7 @@ import ItemForm from "./pages/ItemForm";
 import BillingPage from "./pages/BillingPage";
 // import HelpPage from "./pages/HelpPage";
 import HelpPage from './pages/HelpPage';
+import ReportsPage from './pages/ReportsPage';
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
 
         {/* Help */}
       <Route path="/help" element={<HelpPage />} />
+      <Route path="/reports" element={<ReportsPage />} />
       </Routes>
     </BrowserRouter>
     

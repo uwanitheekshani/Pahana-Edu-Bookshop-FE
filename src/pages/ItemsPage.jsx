@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function ItemsPage() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchItems();
@@ -36,11 +38,19 @@ function ItemsPage() {
 
   return (
     <div className="container mt-5">
+         <div className="d-flex justify-content-between align-items-center mb-4">
       <h2>Items Management</h2>
       {error && <div className="alert alert-danger">{error}</div>}
       <Link to="/items/new" className="btn btn-success mb-3">
         Add Item
       </Link>
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate("/dashboard")}
+        >
+          Back to Dashboard
+        </button>
+      </div>
       <table className="table table-striped table-hover">
         <thead className="table-dark">
           <tr>

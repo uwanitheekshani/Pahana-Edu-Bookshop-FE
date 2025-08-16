@@ -96,11 +96,13 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   // Fetch all customers
   const fetchCustomers = async () => {
@@ -137,15 +139,22 @@ function CustomersPage() {
 
   return (
     <div className="container mt-4">
+<div className="d-flex justify-content-between align-items-center mb-4">
       <h2 className="mb-4">Customer Accounts</h2>
 
       {error && <div className="alert alert-danger">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
 
-      <Link to="/customers/new" className="btn btn-primary mb-3">
+      <Link to="/customers/new" className="btn btn-success mb-3">
         Add New Customer
       </Link>
-
+       <button
+          className="btn btn-primary"
+          onClick={() => navigate("/dashboard")}
+        >
+          Back to Dashboard
+        </button>
+</div>
       <table className="table table-bordered table-striped">
         <thead className="table-dark">
           <tr>
